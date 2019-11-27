@@ -21,7 +21,7 @@ def prepfg(x, y, figsize = None):
     return fig, axes
 
 
-def label(ax, xlabel, ylabel, title):
+def label(ax, xlabel, ylabel, title,  x_fs=20, y_fs=20, t_fs=30):
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_title(title)
