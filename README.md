@@ -1,2 +1,2 @@
 # dilans_utils
-Basic utilities for cleaning and presentation that come up often enough to warrant sealing in a package.
+Basic utilities for cleaning and presentation in jupyter notebooks that come up often enough to warrant sealing in my own package.
