@@ -25,7 +25,7 @@ def prepare_names(series_function: Callable[['CompanyCleaner', pd.Series], pd.Se
     return inner
 
 
-class CompanyCleaner:
+class NameCleaner:
     # Allowed characters of a domain name (BETWEEN dos).
     STEM_RANGE = r'[a-zA-Z0-9\-]'
     DOMAIN_RANGE = r'[a-zA-Z]'
