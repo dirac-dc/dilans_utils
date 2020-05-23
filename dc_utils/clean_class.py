@@ -14,6 +14,19 @@ class CleanClass:
     POSSIBLE_COLOURS = list(mcolors.CSS4_COLORS.keys())
     DISTINCT_COLOURS = ["green", "blue", "orange", "black", "yellow", "grey","red"]
 
+    @staticmethod
+    def coalesce(dframe: pd.DataFrame, prefix: str, name=None) -> pd.DataFrame:
+        '''To be used after a pandas merge to coalesce prefix_x, prefix_y columns'''
+        df = dframe.copy()
+        coi = [col for col in df.columns if prefix in col]
+        merged = df[coi[0]]
+        for col in coi[1:]:
+            merged = merged.combine_first(df[col])
+        if not name:
+            name = prefix
+        df[name] = merged
+        return df.drop(columns=coi)
+
     def find_date_cols(self, df):
         date_cols = []
         for col, values in df.iteritems():
@@ -30,9 +43,16 @@ class CleanClass:
         return parser.parse(re.sub("T.+","",str(date))).replace(tzinfo=None) if pd.notnull(date) else np.nan
 
 
-    def convert_dates(self, df, date_cols=None, timezone=False, verbose=False):
+    def convert_dates(self, df, date_cols=None, spec_format={}, timezone=False, verbose=False):
+        
+        df = df.copy()
+
+        if spec_format:
+            for dcol, dformat in spec_format.items():
+                df[dcol] = df[dcol].apply(lambda x: pd.to_datetime(x, format=dformat))
+
         if not date_cols:
-            date_cols = self.find_date_cols(df)
+            date_cols = self.find_date_cols(df.drop(columns = list(spec_format.keys())))
         
         df[date_cols] = df[date_cols].apply(lambda x: pd.to_datetime(x), axis=0)
 
@@ -99,6 +119,7 @@ class CleanClass:
 
 
     def clean_excel(self, path, header_row=0, sheet_name=0):
+        # TODO find the header row automatically
         data = pd.read_excel(path, header = header_row, sheet_name=sheet_name)
         data = self.standardize_names(data)
         if np.nan in data.columns.to_list():

@@ -9,10 +9,16 @@ from matplotlib import pyplot as plt
 from dateutil import parser
 from colour import Color
 
+mpl.rcParams['figure.dpi']= 300
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class PlotClass:
+    
+    # TODO: see if it is worth using the below
+    TITLE_SIZE = 30
+    TITLE_TO_LABEL_RATIOS = {"axis_label": 0.66666, "axis_tick_label": 0.33333}
+
 
     def __init__(self):
         self.fig = None
@@ -33,21 +39,25 @@ class PlotClass:
         """Cleans up the presentation of dates for axis labels when the dates are timestamps"""
         return parser.parse(re.sub("T.+","",str(date))).replace(tzinfo=None)
 
-    def prepfg(self, x, y, figsize = None):
+    def prepfg(self, x, y, figsize = None, dpi=72, flatten=True):
         """The same as ple.subplot but with more intelligent sizing and stores the 
         'fig' created for use by 'self.format'"""
 
         if not figsize:
-            figsize = (20,10*x)
+            figsize = (15,5*x)
             
-        self.fig, axes = plt.subplots(x, y, figsize=figsize)
+        self.fig, axes = plt.subplots(x, y, figsize=figsize, dpi=dpi)
         logger.warning(f"'fig' attribute has been set: {self.fig}")
          
         if not isinstance(axes, np.ndarray):
             axes = [axes]
-        return self.fig, axes
 
-    def format_ax(self, ax, xlabel=None, ylabel=None, title=None, fig=None, x_fs=20, y_fs=20, t_fs=30, leg_fs="large"):
+        if flatten:  
+            return self.fig, np.ravel(axes)
+        else:
+            return self.fig, axes
+
+    def format_ax(self, ax, xlabel=None, ylabel=None, title=None, fig=None, xt_fs=10, yt_fs=10, x_fs=20, y_fs=20, t_fs=30, leg_fs="large"):
         """Aims to format the fontsizes of labels as matplotlibs defaults are terrible"""
 
         if self.fig or fig:
@@ -55,8 +65,13 @@ class PlotClass:
             bbox = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
             width, height = bbox.width, bbox.height
             if (15 < width < 16) and (7 < height < 8):
-                x_fs, y_fs, t_fs = 30, 30, 40
+                xt_fs, yt_fs, x_fs, y_fs, t_fs = 20, 20, 30, 30, 40
                 leg_fs = "xx-large"
+
+        ax.tick_params(axis='x', which='major', labelsize=xt_fs)
+        ax.tick_params(axis='x', which='minor', labelsize=xt_fs)
+        ax.tick_params(axis='y', which='major', labelsize=yt_fs)
+        ax.tick_params(axis='y', which='minor', labelsize=yt_fs)
 
         ax.set_xlabel(xlabel, fontsize=x_fs) if xlabel else ax.xaxis.label.set_size(x_fs)
         ax.set_ylabel(ylabel, fontsize=y_fs) if ylabel else ax.yaxis.label.set_size(y_fs)
